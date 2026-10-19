@@ -87,11 +87,3 @@ current date:
 When several apply, the badge shown follows this priority:
 Expired > Low stock > Expiring soon > OK. The filter tabs count each
 condition independently (a medicine can count toward more than one tab).
-
-## Notes
-- This was written and reviewed by hand in a sandboxed environment without
-  access to Maven Central, so it has **not** been compiled/run here — review
-  it as you would any new code before relying on it, and run
-  `mvn spring-boot:run` locally to try it.
-- Swap H2 for Postgres/MySQL by changing the `spring.datasource.*` properties
-  and adding the matching driver dependency to `pom.xml`.

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Invoice</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 12mm;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #ffffff;
+            color: #0f172a;
+            /* DejaVu Sans / Noto Sans support ₹ in PDF engines if registered, fallback to Arial */
+            font-family: 'DejaVu Sans', 'Noto Sans', Arial, Helvetica, sans-serif;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .invoice-box {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 28px 32px 22px 32px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            background: #ffffff;
+            box-sizing: border-box;
+        }
+
+        /* Layout tables (Replaces Flexbox for 100% PDF compatibility) */
+        .layout-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: none;
+            margin: 0;
+        }
+
+        .layout-table td {
+            border: none;
+            padding: 0;
+            vertical-align: top;
+        }
+
+        .header-section {
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 18px;
+            margin-bottom: 20px;
+        }
+
+        .brand {
+            color: #0f766e;
+            font-size: 26px;
+            font-weight: 800;
+            margin: 0 0 6px 0;
+            letter-spacing: 0.03em;
+        }
+
+        .meta, .muted {
+            color: #64748b;
+            font-size: 13px;
+            margin: 4px 0;
+            line-height: 1.4;
+        }
+
+        .invoice-right {
+            text-align: right;
+        }
+
+        .invoice-no {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0 0 6px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #1e293b;
+            color: #ffffff;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 6px;
+        }
+
+        /* Billing Section */
+        .billing-section {
+            margin-bottom: 18px;
+        }
+
+        .billing-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #64748b;
+            margin: 0 0 4px 0;
+        }
+
+        .customer-name {
+            margin: 0 0 2px 0;
+            font-size: 17px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* Items Table */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #dfe7ee;
+            margin: 16px 0 22px 0;
+            font-size: 13.5px;
+        }
+
+        .items-table th,
+        .items-table td {
+            border: 1px solid #dfe7ee;
+            padding: 11px 12px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .items-table thead tr {
+            background: #f8fafc;
+        }
+
+        .items-table thead th {
+            color: #475569;
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .right {
+            text-align: right !important;
+        }
+
+        .center {
+            text-align: center !important;
+        }
+
+        /* Totals Section */
+        .totals-wrapper {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        /*
+         * NOTE: Currently aligned RIGHT to match your 2nd image.
+         * If you want the Totals box on the LEFT side instead, change `margin-left: auto;` to `margin-left: 0;`
+         */
+        .totals-table {
+            width: 300px;
+            margin-left: auto; /* Change to 0 if you want the entire Totals block on the left side */
+            border-collapse: collapse;
+            border: none;
+        }
+
+        .totals-table td {
+            border: none;
+            padding: 5px 0;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .totals-table tr.grand td {
+            border-top: 2px solid #dfe7ee;
+            padding-top: 10px;
+            margin-top: 6px;
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        /* Footer Note */
+        .footer-note {
+            margin-top: 30px;
+            padding-top: 14px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            font-size: 12.5px;
+            color: #64748b;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+<div class="invoice-box">
+
+    <!-- Header Section using Table instead of Flex for PDF support -->
+    <div class="header-section">
+        <table class="layout-table">
+            <tr>
+                <td style="width: 60%;">
+                    <h4 class="brand">MEDINVENTORY PHARMACY</h4>
+                    <p class="meta">Healthcare &amp; Surgical Supplies | GSTIN: 36AABCU9603R1ZM</p>
+                    <p class="meta">Phone: +91 98765 43210 | support@medinventory.com</p>
+                </td>
+                <td style="width: 40%;" class="invoice-right">
+                    <h5 class="invoice-no" th:text="${invoiceNumber}">INV-0000</h5>
+                    <p class="muted" th:text="'Date: ' + ${#temporals.format(createdAt, 'dd MMM yyyy, hh:mm a')}">Date: --</p>
+                    <span class="badge" th:text="${paymentMode}">CASH</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Billed To Section -->
+    <div class="billing-section">
+        <span class="billing-label">Billed To:</span>
+        <h6 class="customer-name" th:text="${customerName}">Customer Name</h6>
+        <p class="muted" th:text="'Phone: ' + (${!#strings.isEmpty(customerPhone)} ? ${customerPhone} : 'N/A')">Phone: N/A</p>
+    </div>
+
+    <!-- Medicine Items Table -->
+    <table class="items-table">
+        <thead>
+        <tr>
+            <th style="width: 35px;">#</th>
+            <th>Medicine Description</th>
+            <th style="width: 110px;">Batch</th>
+            <th class="center" style="width: 60px;">Qty</th>
+            <th class="right" style="width: 110px;">Unit Price</th>
+            <th class="right" style="width: 110px;">Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item, iterStat : ${bill.items}">
+            <td th:text="${iterStat.index + 1}">1</td>
+            <td th:text="${item.medicineName}">Medicine</td>
+            <td th:text="${!#strings.isEmpty(item.batchNumber) ? item.batchNumber : '-'}">-</td>
+            <td class="center" th:text="${item.quantity}">1</td>
+            <td class="right" th:text="'&#8377;' + ${#numbers.formatDecimal(item.unitPrice,1,'COMMA',2,'POINT')}">&#8377;0.00</td>
+            <td class="right" th:text="'&#8377;' + ${#numbers.formatDecimal(item.lineTotal,1,'COMMA',2,'POINT')}">&#8377;0.00</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Totals Section using Table for PDF support -->
+    <div class="totals-wrapper">
+        <table class="totals-table">
+            <tr>
+                <td>Subtotal:</td>
+                <td class="right" th:text="'&#8377;' + ${#numbers.formatDecimal(subTotal,1,'COMMA',2,'POINT')}">&#8377;0.00</td>
+            </tr>
+            <tr>
+                <td th:text="'Discount (' + ${#numbers.formatDecimal(discountPercent,1,2)} + '%):'">Discount (0%):</td>
+                <td class="right" th:text="'-&#8377;' + ${#numbers.formatDecimal(discountAmount,1,'COMMA',2,'POINT')}">-&#8377;0.00</td>
+            </tr>
+            <tr>
+                <td th:text="'Tax / GST (' + ${#numbers.formatDecimal(taxPercent,1,2)} + '%):'">Tax / GST (0%):</td>
+                <td class="right" th:text="'+&#8377;' + ${#numbers.formatDecimal(taxAmount,1,'COMMA',2,'POINT')}">+&#8377;0.00</td>
+            </tr>
+            <tr class="grand">
+                <td>Grand Total:</td>
+                <td class="right" th:text="'&#8377;' + ${#numbers.formatDecimal(grandTotal,1,'COMMA',2,'POINT')}">&#8377;0.00</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer-note">
+        Thank you for your visit! Get well soon. Goods once sold will not be taken back without original invoice.
+    </div>
+</div>
+</body>
+</html>

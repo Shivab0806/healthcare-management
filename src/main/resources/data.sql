@@ -1,0 +1,2 @@
+-- No seed data is loaded here. All application data should be created through
+-- Liquibase migrations or inserted dynamically through the application APIs.

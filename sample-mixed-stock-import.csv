@@ -1,0 +1,4 @@
+name,company,category,stripPrice,tabletsPerStrip,stripQuantity,looseTablets,batchNumber,expiryDate,lowStockThreshold
+Paracetamol 500mg,Sunrise Pharma,Analgesic,25.00,10,3,17,SP-2201,2027-12-31,20
+Amoxicillin 250mg,MediCore Labs,Antibiotic,93.00,15,2,5,ML-5590,2027-06-30,15
+Metformin 500mg,Sunrise Pharma,Antidiabetic,76.00,20,4,0,SP-2340,2028-05-15,25

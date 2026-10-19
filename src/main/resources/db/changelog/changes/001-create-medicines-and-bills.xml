@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="001-create-medicines-table" author="developer">
+        <createTable tableName="medicines">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="stock" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="low_stock_threshold" type="INT" defaultValueNumeric="20">
+                <constraints nullable="false"/>
+            </column>
+            <column name="batch_number" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expiry_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="002-create-bills-table" author="developer">
+        <createTable tableName="bills">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="invoice_number" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="customer_name" type="VARCHAR(255)"/>
+            <column name="customer_phone" type="VARCHAR(255)"/>
+            <column name="payment_mode" type="VARCHAR(255)"/>
+            <column name="sub_total" type="DECIMAL(12,2)"/>
+            <column name="discount_percent" type="DECIMAL(5,2)"/>
+            <column name="discount_amount" type="DECIMAL(12,2)"/>
+            <column name="tax_percent" type="DECIMAL(5,2)"/>
+            <column name="tax_amount" type="DECIMAL(12,2)"/>
+            <column name="grand_total" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="items_json" type="TEXT"/>
+            <column name="created_at" type="DATETIME"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

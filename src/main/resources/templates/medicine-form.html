@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${mode == 'edit'} ? 'Edit Medicine' : 'Add Medicine'">Add Medicine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="bg-stone-100 min-h-screen">
+<div class="max-w-4xl mx-auto px-6 py-8">
+
+    <div class="flex items-start justify-between mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-900" id="page-title">Add Medicine</h1>
+            <p class="text-slate-500 mt-1" id="page-subtitle">Add a new medicine to the catalog</p>
+        </div>
+        <a href="/medicines"
+           class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium px-4 py-2.5 rounded-lg transition">← Back to Inventory</a>
+    </div>
+
+    <div id="form-error" class="hidden bg-red-50 border border-red-200 text-red-700 rounded-xl px-5 py-3 mb-5 text-sm"></div>
+
+    <form id="medicine-form" class="bg-white rounded-xl border border-slate-200 p-8">
+        <input type="hidden" id="medicine-id" th:value="${medicineId}">
+
+        <div class="mb-5">
+            <label class="block font-semibold text-slate-800 mb-2" for="name">Medicine name</label>
+            <input id="name" name="name" type="text" placeholder="e.g. Paracetamol 500mg" required
+                   class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-5">
+            <div>
+                <label class="block font-semibold text-slate-800 mb-2" for="company">Company</label>
+                <input id="company" name="company" type="text" placeholder="Manufacturer" required
+                       class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300">
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-800 mb-2" for="category">Category</label>
+                <input id="category" name="category" type="text" placeholder="General" required
+                       class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-5">
+            <div>
+                <label class="block font-semibold text-slate-800 mb-2" for="stripPrice">Strip price (₹ per strip)</label>
+                <input id="stripPrice" name="stripPrice" type="number" min="0" step="0.01" value="0" required
+                       class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300">
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-800 mb-2">Stock entry</label>
+                <div class="flex gap-4 mt-2 flex-wrap">
+                    <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+                        <input type="radio" name="stockMode" value="single" checked>
+                        Single tablets
+                    </label>
+                    <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+                        <input type="radio" name="stockMode" value="strip">
+                        Strips
+                    </label>
+                    <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+                        <input type="radio" name="stockMode" value="mixed">
+                        Mix of both
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div id="single-stock-group" class="mb-5">
+            <label class="block font-semibold text-slate-800 mb-2" for="stock">Current stock (tablets)</label>
+            <input id="stock" name="stock" type="number" min="0" step="1" value="0" required
+                   class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300">
+            <p class="text-xs text-slate-400 mt-1.5">Enter the total loose tablets available, or use strips/mix mode below.</p>
+        </div>
+
+        <div id="strip-stock-group" class="hidden mb-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-3">
+                <div>
+                    <label class="block font-semibold text-slate-800 mb-2" for="tabletsPerStrip">Tablets per strip</label>
+                    <input id="tabletsPerStrip" name="tabletsPerStrip" type="number" min="1" step="1" placeholder="e.g. 10"
+                           class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-800 mb-2" for="stripQuantity">Number of strips</label>
+                    <input id="stripQuantity" name="stripQuantity" type="number" min="0" step="1" placeholder="e.g. 5"
+                           class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label class="block font-semibold text-slate-800 mb-2" for="extraSingleTablets">Loose tablets (optional)</label>
+                    <input id="extraSingleTablets" name="extraSingleTablets" type="number" min="0" step="1" value="0"
+                           class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300">
+                </div>
+                <div class="flex items-end">
+                    <div class="w-full rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                        Total stock: <strong id="calculated-stock">0</strong> tablets
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-5">
+            <div class="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-800">
+                Calculated price per tablet: <strong id="unit-price-display">₹0.00</strong>
+            </div>
+            <input type="hidden" id="price" name="price" value="0">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-2">
+            <div>
+                <label class="block font-semibold text-slate-800 mb-2" for="lowStockThreshold">Low-stock threshold</label>
+                <input id="lowStockThreshold" name="lowStockThreshold" type="number" min="0" step="1" value="20" required
+                       class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300">
+                <p class="text-xs text-slate-400 mt-1.5">Alert triggers when stock drops to or below this number.</p>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-800 mb-2" for="batchNumber">Batch number</label>
+                <input id="batchNumber" name="batchNumber" type="text" placeholder="e.g. SP-2201" required
+                       class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300">
+            </div>
+        </div>
+
+        <div class="mb-6 mt-4">
+            <label class="block font-semibold text-slate-800 mb-2" for="expiryDate">Expiry date</label>
+            <input id="expiryDate" name="expiryDate" type="date" required
+                   class="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300">
+        </div>
+
+        <hr class="border-slate-100 mb-6">
+
+        <div class="flex gap-3">
+            <button type="submit" id="submit-btn"
+                    class="bg-slate-800 hover:bg-slate-900 text-white font-semibold px-6 py-3 rounded-lg transition">Add Medicine</button>
+            <a href="/medicines"
+               class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium px-6 py-3 rounded-lg transition">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script th:inline="javascript">
+    const MODE = /*[[${mode}]]*/ 'add';
+</script>
+<script src="/js/medicine-form.js"></script>
+</body>
+</html>

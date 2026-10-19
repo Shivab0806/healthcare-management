@@ -1,0 +1,291 @@
+<!-- src/main/resources/templates/billing.html -->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS Billing & Invoices | Sai Hospital</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<!-- Top Navigation -->
+<nav class="app-navbar d-flex justify-content-between align-items-center sticky-top no-print">
+    <a href="/inventory" class="brand-logo">
+        <i class="bi bi-capsule-pill"></i>
+        <span>Sai Hospital</span>
+    </a>
+    <div class="d-flex gap-2">
+        <a href="/inventory" class="nav-pill-link"><i class="bi bi-box-seam me-1"></i> Inventory</a>
+        <a href="/billing" class="nav-pill-link active"><i class="bi bi-receipt-cutoff me-1"></i> POS Billing & History</a>
+    </div>
+</nav>
+
+<div class="container-fluid py-4 px-4 no-print">
+    <div id="alertContainer"></div>
+
+    <div class="row g-4">
+        <!-- LEFT: Medicine Catalog Selector -->
+        <div class="col-lg-5">
+            <div class="card-modern p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-search me-2 text-secondary"></i>Select Medicines</h5>
+                    <span class="badge bg-secondary" id="catalogCount">0 Items</span>
+                </div>
+
+                <div class="input-group mb-3">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" id="posSearchInput" class="form-control" placeholder="Search by medicine name, batch, or category...">
+                </div>
+
+                <div id="posMedicineList" class="medicine-search-list pe-1">
+                    <!-- Populated dynamically via billing.js -->
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Active Bill Cart & Calculation -->
+        <div class="col-lg-7">
+            <div class="card-modern p-4">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-0">New Customer Invoice</h5>
+                        <small class="text-muted">Add items from the catalog and verify quantities</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" id="clearCartBtn">
+                        <i class="bi bi-trash3 me-1"></i> Clear Cart
+                    </button>
+                </div>
+
+                <!-- Customer Info Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-5">
+                        <label class="form-label small fw-semibold">Patient / Customer Name <span class="text-danger">*</span></label>
+                        <input type="text" id="customerName" class="form-control" placeholder="e.g., Rahul Sharma" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Phone Number</label>
+                        <input type="text" id="customerPhone" class="form-control" placeholder="10-digit mobile">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Payment Mode</label>
+                        <select id="paymentMode" class="form-select">
+                            <option value="CASH">Cash</option>
+                            <option value="UPI">UPI / QR</option>
+                            <option value="CARD">Card</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Cart Items Table -->
+                <div class="table-responsive border rounded mb-3" style="max-height: 280px;">
+                    <table class="table table-modern align-middle">
+                        <thead class="sticky-top">
+                        <tr>
+                            <th>Medicine</th>
+                            <th class="text-end">Unit Price</th>
+                            <th class="text-center" style="width: 140px;">Qty</th>
+                            <th class="text-end">Total</th>
+                            <th class="text-center" style="width: 50px;"></th>
+                        </tr>
+                        </thead>
+                        <tbody id="cartTableBody">
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                <i class="bi bi-cart3 fs-3 d-block mb-1"></i>
+                                No medicines added yet. Click any medicine on the left to add.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Tax, Discount & Summary Calculation Box -->
+                <div class="row g-3 align-items-end bg-light p-3 rounded border">
+                    <div class="col-md-6">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold">Discount (%)</label>
+                                <input type="number" id="discountPercent" class="form-control" value="0" min="0" max="100" step="0.5">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-semibold">GST / Tax (%)</label>
+                                <input type="number" id="taxPercent" class="form-control" value="12" min="0" max="100" step="0.5">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-muted">Subtotal:</span>
+                            <span class="fw-semibold" id="calcSubTotal">₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-1 text-success">
+                            <span>Discount:</span>
+                            <span id="calcDiscountAmt">-₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted">Tax (GST):</span>
+                            <span id="calcTaxAmt">+₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between border-top pt-2">
+                            <span class="fw-bold fs-5">Grand Total:</span>
+                            <span class="fw-bold fs-5 text-teal" style="color: var(--primary);" id="calcGrandTotal">₹0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <button class="btn btn-primary-teal px-4 py-2" id="generateBillBtn">
+                        <i class="bi bi-check2-circle me-1"></i> Save & Generate Invoice
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM: Saved Bill History -->
+    <div class="card-modern mt-4 p-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+            <button type="button" id="billHistoryToggleBtn" class="btn btn-link text-decoration-none p-0 text-start">
+                <h5 class="fw-bold mb-0"><i class="bi bi-clock-history me-2"></i>Saved Bill History</h5>
+            </button>
+            <small class="text-muted">Complete audit log of generated invoices</small>
+        </div>
+
+        <div id="billHistoryPanel" class="d-none">
+            <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                <input type="text" id="historySearchInput" class="form-control form-control-sm" placeholder="Search by Invoice # or Customer..." style="width: 220px;">
+                <input type="date" id="historyFromDate" class="form-control form-control-sm" style="width: 150px;" title="From date">
+                <input type="date" id="historyToDate" class="form-control form-control-sm" style="width: 150px;" title="To date">
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="clearHistoryFiltersBtn">Clear Filters</button>
+                <select id="historyPageSize" class="form-select form-select-sm" style="width: 90px;" aria-label="History page size">
+                    <option value="10" selected>10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+                <button class="btn btn-sm btn-outline-secondary" id="refreshHistoryBtn">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-modern">
+                    <thead>
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Date & Time</th>
+                        <th>Customer</th>
+                        <th>Phone</th>
+                        <th>Payment</th>
+                        <th class="text-end">Subtotal</th>
+                        <th class="text-end">Discount</th>
+                        <th class="text-end">Tax</th>
+                        <th class="text-end">Grand Total</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="billHistoryBody">
+                    <!-- Populated via billing.js -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                <div class="small text-muted" id="historyPageInfo">Page 1 of 1</div>
+                <div class="btn-group" role="group" aria-label="Bill history pagination">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="historyPrevBtn">Previous</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="historyNextBtn">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- INVOICE PREVIEW, PRINT & PDF MODAL -->
+<div class="modal fade" id="printableInvoiceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header no-print">
+                <h5 class="modal-title fw-bold">Invoice Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="invoicePdfArea" class="invoice-box m-3">
+                    <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
+                        <div>
+                            <h4 class="fw-bold mb-1" style="color: var(--primary);">MEDINVENTORY PHARMACY</h4>
+                            <p class="small text-muted mb-0">Healthcare & Surgical Supplies | GSTIN: 36AABCU9603R1ZM</p>
+                            <p class="small text-muted mb-0">Phone: +91 98765 43210 | support@medinventory.com</p>
+                        </div>
+                        <div class="text-end">
+                            <h5 class="fw-bold mb-1" id="invModalNumber">INV-0000</h5>
+                            <p class="small text-muted mb-0" id="invModalDate">Date: --</p>
+                            <span class="badge bg-dark mt-1" id="invModalPayment">CASH</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="small text-muted text-uppercase fw-semibold">Billed To:</span>
+                        <h6 class="fw-bold mb-0" id="invModalCustomer">Customer Name</h6>
+                        <p class="small text-muted mb-0" id="invModalPhone">Phone: N/A</p>
+                    </div>
+
+                    <table class="table table-bordered table-sm align-middle mb-3">
+                        <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Medicine Description</th>
+                            <th>Batch</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-end">Unit Price</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                        </thead>
+                        <tbody id="invModalItems"></tbody>
+                    </table>
+
+                    <div class="row justify-content-end">
+                        <div class="col-sm-6 col-md-5">
+                            <div class="d-flex justify-content-between small py-1">
+                                <span>Subtotal:</span>
+                                <span id="invModalSubTotal">₹0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between small py-1">
+                                <span>Discount (<span id="invModalDiscPct">0</span>%):</span>
+                                <span id="invModalDiscAmt">-₹0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between small py-1">
+                                <span>Tax / GST (<span id="invModalTaxPct">0</span>%):</span>
+                                <span id="invModalTaxAmt">+₹0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-bold border-top pt-2 mt-1 fs-6">
+                                <span>Grand Total:</span>
+                                <span id="invModalGrandTotal">₹0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-top mt-4 pt-3 text-center small text-muted">
+                        Thank you for your visit! Get well soon. Goods once sold will not be taken back without original invoice.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer no-print">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-outline-primary" id="printInvoiceBtn">
+                    <i class="bi bi-printer me-1"></i> Print Invoice
+                </button>
+                <button type="button" class="btn btn-primary-teal" id="downloadPdfBtn">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/billing.js}"></script>
+</body>
+</html>

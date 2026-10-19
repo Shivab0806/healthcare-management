@@ -7,16 +7,12 @@ medicine inventory, with a Thymeleaf UI that calls that same API via `fetch()`.
 - Java 21, Spring Boot 3.3.5
 - Spring Web, Spring Data JPA, Spring Validation
 - Thymeleaf + Tailwind CSS (CDN) + vanilla JS
-- H2 in-memory database (seeded with 12 demo medicines on every startup)
-
 ## Run it
 ```bash
 mvn spring-boot:run
 ```
 Then open:
 - UI:  http://localhost:8080/medicines
-- H2 console: http://localhost:8080/h2-console
-  (JDBC URL `jdbc:h2:mem:inventorydb`, user `sa`, blank password)
 
 ## Project layout
 ```
